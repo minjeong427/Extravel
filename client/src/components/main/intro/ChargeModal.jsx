@@ -9,10 +9,40 @@ import axios from 'axios';
 const ChargeModal = ({ setModalOpen }) => {
   const modalBackground = useRef();
   const [text, setText] = useState('');
+  const [calculatedNumber, setCalculatedNumber] =
+    useState('');
 
+  const [chargePoint, setChargePoint] = useState('');
+
+  const userGrade = 'gold';
+
+  const getMultiplier = (grade) => {
+    switch (grade) {
+      case 'bronze':
+        return 1.001;
+      case 'silver':
+        return 1.002;
+      case 'gold':
+        return 1.003;
+      default:
+        return 1.001;
+    }
+  };
+
+  const getMultiPoint = (grade) => {
+    switch (grade) {
+      case 'bronze':
+        return 0.001;
+      case 'silver':
+        return 0.002;
+      case 'gold':
+        return 0.003;
+      default:
+        return 0.001;
+    }
+  };
   const handleChange = (e) => {
     const { value } = e.target;
-
     const numberValue = Number(value.replace(/,/g, ''));
 
     if (!isNaN(numberValue)) {
@@ -20,21 +50,37 @@ const ChargeModal = ({ setModalOpen }) => {
         const formattedNumber =
           numberValue.toLocaleString();
         setText(formattedNumber);
+
+        const multiPoint = getMultiPoint(userGrade);
+        const calculated = (
+          numberValue * multiPoint
+        ).toLocaleString('ko-KR');
+        setCalculatedNumber(calculated);
+
+        const multiplier = getMultiplier(userGrade);
+        const chargePointValue = (
+          numberValue * multiplier
+        ).toLocaleString('ko-KR');
+        setChargePoint(chargePointValue);
       } else {
         alert('1억 원 이하만 충전 가능합니다.');
         setText('');
+        setCalculatedNumber('');
+        setChargePoint('');
       }
     } else {
       alert('숫자와 쉼표(,)만 입력 가능합니다.');
       setText('');
+      setCalculatedNumber('');
+      setChargePoint('');
     }
   };
 
-  function handleClose(e) {
+  const handleClose = (e) => {
     if (e.target === modalBackground.current) {
       setModalOpen(false);
     }
-  }
+  };
 
   const confirmPayment = async () => {
     try {
@@ -129,7 +175,7 @@ const ChargeModal = ({ setModalOpen }) => {
             <div>
               포인트 충전 금액의
               <br />
-              <strong>1.5% </strong>적립
+              <strong>0.3% </strong>적립
             </div>
           </div>
           <div className={styles.silverGrade}>
@@ -144,7 +190,7 @@ const ChargeModal = ({ setModalOpen }) => {
             <div>
               포인트 충전 금액의
               <br />
-              <strong>1.0% </strong>적립
+              <strong>0.2%</strong> 적립
             </div>
           </div>
           <div className={styles.bronzeGrade}>
@@ -157,18 +203,15 @@ const ChargeModal = ({ setModalOpen }) => {
             <div>
               포인트 충전 금액의
               <br />
-              <strong>0.5%</strong> 적립
+              <strong>0.1%</strong> 적립
             </div>
           </div>
         </div>
 
         <div className={styles.currentMoney}>
-          보유 포인트
-          <div className={styles.currentMoneyInput}>
-            {Number(text) +
-              Number(text.replace(/,/g, '') * 0.005)}{' '}
-            P
-          </div>
+          보유 ETP
+          <div className={styles.currentMoneyInput}></div>
+          ETP
         </div>
 
         <div className={styles.bottom}>
@@ -189,37 +232,30 @@ const ChargeModal = ({ setModalOpen }) => {
               원 <br />
             </div>
 
-            <div className={styles.upPoint}>
-              + 적립 포인트
-            </div>
+            <div className={styles.upPoint}>+ 적립 ETP</div>
             <div className={styles.pointContainer}>
               <div className={styles.plusPoint}>
-                {Number(text.replace(/,/g, '') * 0.005)}{' '}
+                {calculatedNumber}
               </div>{' '}
-              P
+              ETP
             </div>
 
             <div className={styles.explain}>
-              홍길동 님의 등급은 브론즈입니다.
+              홍길동 님의 등급은 {userGrade}입니다.
               <br />
-              포인트 충전 금액의 0.5%가 적립됩니다.
+              ETP 충전 금액의 0.3%가 적립됩니다.
             </div>
             <div className={styles.total}>
-              ={' '}
-              {Number(text.replace(/,/g, '')) +
-                Number(text.replace(/,/g, '') * 0.005)}{' '}
-              P
+              = {chargePoint} ETP
             </div>
           </div>
 
           <div className={styles.totalAmount}>
             <div className={styles.totalAmountTitle}>
-              충전 후 예상 포인트
+              충전 후 예상 ETP
             </div>
             <div className={styles.totalAmountInput}>
-              {Number(text.replace(/,/g, '')) +
-                Number(text.replace(/,/g, '') * 0.005)}{' '}
-              P
+              ETP
             </div>
             <button
               className={styles.chargeBtn}
